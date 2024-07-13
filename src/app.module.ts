@@ -3,7 +3,6 @@ import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
 import { ConfigModule } from "@nestjs/config"
 import { MongooseModule } from "@nestjs/mongoose"
-import { MulterModule } from "@nestjs/platform-express"
 import { MemoryStoredFile, NestjsFormDataModule } from "nestjs-form-data"
 
 @Module({
@@ -12,11 +11,8 @@ import { MemoryStoredFile, NestjsFormDataModule } from "nestjs-form-data"
             envFilePath: ".env",
             isGlobal: true
         }),
-        MulterModule.register({
-            dest: "./uploads"
-        }),
         NestjsFormDataModule.config({ storage: MemoryStoredFile }),
-        MongooseModule.forRoot(process.env.DB_URI),
+        MongooseModule.forRoot(process.env.DB_URI)
     ],
     controllers: [AppController],
     providers: [AppService]
