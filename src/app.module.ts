@@ -4,6 +4,7 @@ import { AppService } from "./app.service"
 import { ConfigModule } from "@nestjs/config"
 import { MongooseModule } from "@nestjs/mongoose"
 import { MemoryStoredFile, NestjsFormDataModule } from "nestjs-form-data"
+import { AuthModule } from "./auth/auth.module"
 
 @Module({
     imports: [
@@ -12,7 +13,8 @@ import { MemoryStoredFile, NestjsFormDataModule } from "nestjs-form-data"
             isGlobal: true
         }),
         NestjsFormDataModule.config({ storage: MemoryStoredFile }),
-        MongooseModule.forRoot(process.env.DB_URI)
+        MongooseModule.forRoot(process.env.DB_URI),
+        AuthModule
     ],
     controllers: [AppController],
     providers: [AppService]
