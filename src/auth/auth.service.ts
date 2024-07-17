@@ -8,8 +8,6 @@ import { SignInDto } from "./dto/signIn.dto"
 
 export interface FindAllResponse {
     total: number
-    page: number
-    page_size: number
     users: User[]
 }
 
@@ -20,6 +18,46 @@ export class AuthService {
         private userModel: Model<User>,
         private jwtService: JwtService
     ) {}
+
+    async findAll(): Promise<FindAllResponse> {
+        const result = await this.userModel
+            .aggregate([
+                {
+                    $facet: {
+                        users: [
+                            {
+                                $project: {
+                                    _id: 1,
+                                    firstName: 1,
+                                    lastName: 1,
+                                    username: 1,
+                                    password: 1,
+                                    email: 1,
+                                    image: { $concat: ["http://localhost:3001/api/auth/img/", "$image"] },
+                                    dob: 1,
+                                    address: 1,
+                                    phone: 1,
+                                    model: 1,
+                                    brand: 1,
+                                    createdAt: 1,
+                                    updatedAt: 1
+                                }
+                            }
+                        ],
+
+                        total: [{ $count: "value" }]
+                    }
+                }
+            ])
+            .exec()
+
+        const usersTotal = result[0].total.length > 0 ? result[0].total[0].value : 0
+
+        return {
+            total: usersTotal,
+            users: result[0].users
+        }
+    }
 
     async signIn(signInDto: SignInDto): Promise<{ token: string }> {
         const { username, password } = signInDto
