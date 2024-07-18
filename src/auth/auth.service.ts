@@ -2,9 +2,11 @@ import { Injectable, UnauthorizedException } from "@nestjs/common"
 import { InjectModel } from "@nestjs/mongoose"
 import { User } from "./schemas/user.schema"
 import { Model } from "mongoose"
+import { Query } from "express-serve-static-core"
 import * as bcrypt from "bcryptjs"
 import { JwtService } from "@nestjs/jwt"
 import { SignInDto } from "./dto/signIn.dto"
+import { RegisterDto } from "./dto/register.dto"
 
 export interface FindAllResponse {
     total: number
@@ -19,7 +21,7 @@ export class AuthService {
         private jwtService: JwtService
     ) {}
 
-    async findAll(): Promise<FindAllResponse> {
+    async findAll(query: Query): Promise<FindAllResponse> {
         const result = await this.userModel
             .aggregate([
                 {
@@ -73,6 +75,29 @@ export class AuthService {
         if (!isPasswordMatched) {
             throw new UnauthorizedException("Invalid usernames or passwords")
         }
+
+        const token = this.jwtService.sign({ id: user._id })
+
+        return { token }
+    }
+
+    async register(registerDto: RegisterDto): Promise<{ token: string }> {
+        const { firstName, lastName, username, password, email, dob, address, phone, model, brand } = registerDto
+
+        const hashedPassword = await bcrypt.hash(password, 10)
+
+        const user = await this.userModel.create({
+            firstName,
+            lastName,
+            username,
+            password: hashedPassword,
+            email,
+            dob,
+            address,
+            phone,
+            model,
+            brand
+        })
 
         const token = this.jwtService.sign({ id: user._id })
 
