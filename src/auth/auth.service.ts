@@ -1,7 +1,7 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common"
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common"
 import { InjectModel } from "@nestjs/mongoose"
 import { User } from "./schemas/user.schema"
-import { Model } from "mongoose"
+import mongoose, { Model } from "mongoose"
 import { Query } from "express-serve-static-core"
 import * as bcrypt from "bcryptjs"
 import { JwtService } from "@nestjs/jwt"
@@ -102,5 +102,17 @@ export class AuthService {
         const token = this.jwtService.sign({ id: user._id })
 
         return { token }
+    }
+
+    async findbyId(id: string): Promise<User> {
+        const isValidId = mongoose.isValidObjectId(id)
+        if (!isValidId) {
+            throw new BadRequestException("Invalid ID.")
+        }
+        const user = await this.userModel.findById({ _id: id })
+        if (!user) {
+            throw new NotFoundException("Unavailable.")
+        }
+        return user
     }
 }
