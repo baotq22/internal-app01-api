@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Post, Query, Res } from "@nestjs/common"
+import { Body, Controller, Get, Param, Post, Query, Res } from "@nestjs/common"
 import { SignInDto } from "./dto/signIn.dto"
 import { AuthService, FindAllResponse } from "./auth.service"
 import { Query as ExpressQuery } from "express-serve-static-core"
 import { RegisterDto } from "./dto/register.dto"
 import { Response } from "express"
 import { responseError, responseSuccess } from "utils/responseHandle"
+import * as path from "path"
 
 @Controller("auth")
 export class AuthController {
@@ -27,5 +28,11 @@ export class AuthController {
     @Post("/register")
     register(@Body() registerDto: RegisterDto): Promise<{ token: string }> {
         return this.authService.register(registerDto)
+    }
+
+    @Get("img/:imageName")
+    serveImage(@Param("imageName") imageName: string, @Res() res: Response): void {
+        const imagePath = path.join(process.cwd(), "public/uploads/images/", imageName)
+        res.sendFile(imagePath)
     }
 }
